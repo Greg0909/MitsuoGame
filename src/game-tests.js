@@ -6,8 +6,10 @@ let yMouseCoordinates = 40;
 let pusheenHtml ;
 let coordinatesHtml;
 let cepilloHtml;
+let ongoingTouches = [];
 
 document.onmousemove = onMouseMove;
+document.ontouchmove = onTouchMove;
 
 document.addEventListener('keydown', (event)=>{
     console.log("Pressed KeyCode:", event.keyCode);
@@ -38,11 +40,28 @@ document.addEventListener('keydown', (event)=>{
     updatePusheen();
 })
 
+
+function onTouchMove(event){
+    xMouseCoordinates = event.changedTouches[0].clientX;
+    yMouseCoordinates = event.changedTouches[0].clientY;
+    updateMouseCoordinates()
+};
+
 function onMouseMove(event){
      xMouseCoordinates = event.clientX;
      yMouseCoordinates = event.clientY;
     updateMouseCoordinates()
 };
+
+function onTouchStart(event) {
+    event.preventDefault();
+    var touches = evt.changedTouches;
+  
+    for (var i = 0; i < touches.length; i++) {
+      ongoingTouches.push(copyTouch(touches[i]));
+    }
+}
+
 
 function updateMouseCoordinates(){
     coordinatesHtml = (
