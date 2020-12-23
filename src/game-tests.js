@@ -1,123 +1,62 @@
-let xCubePosition = 50;
-let yCubePosition = 0;
-let lastWasLeft = true;
-let xMouseCoordinates = 40;
-let yMouseCoordinates = 40;
-let pusheenHtml ;
-let coordinatesHtml;
-let cepilloHtml;
-let ongoingTouches = [];
+let _database = firebase.database();
+const DefaultName = "Patatas";
 
-document.onmousemove = onMouseMove;
-document.ontouchmove = onTouchMove;
 
-document.addEventListener('keydown', (event)=>{
-    console.log("Pressed KeyCode:", event.keyCode);
-    if(event.keyCode == 37) // Left Arrow
-    {
-        xCubePosition -= 2;
-        console.log("Se presiono Izquierda");
-        lastWasLeft=true;
-    }
-    else if(event.keyCode == 39) // Right Arrow
-    {
-        xCubePosition += 2;
-        console.log("Se presiono Derecha");
-        lastWasLeft=false;
-    }
-    
-    if(event.keyCode == 40) // Down Arrow
-    {
-        yCubePosition += 2;
-        console.log("Se presiono Abajo");
-    }
-    else if(event.keyCode == 38) // Up Arrow
-    {
-        yCubePosition -= 2;
-        console.log("Se presiono Arriba");
+
+class Player extends React.Component{
+    constructor(props){
+        super(props);
+        this.setName = this.setName.bind(this);
+        const initialUserName = DefaultName + "_" + (Math.floor(Math.random()*1000) +1);
+        _database.ref("Users/" + initialUserName).set( 1 );
+        
+        this.state = {
+            userName: initialUserName,
+            allUserNames: [initialUserName, "UwU"]
+        };
+
+        _database.ref('Users').on('value', (snapshot) => {
+            const data = snapshot.val();
+            let names = [];
+            for(var k in data) names.push(k);
+            console.log(names);
+            this.setState(()=>{return {
+                allUserNames: names
+            };});
+        });
+        window.onbeforeunload = ()=> _database.ref("Users/" + this.state.userName).remove();
     }
 
-    updatePusheen();
-})
+    setName(e){
+        e.preventDefault();
 
+        const userName = e.target.elements.userName.value;
+        if(userName)
+        {
+            _database.ref("Users/" + this.state.userName).remove();
+            this.setState(()=>{return {userName: userName};})
+            e.target.elements.userName.value = "";
+            _database.ref("Users/" + userName).set( 1 );
+        }
+    }
 
-function onTouchMove(event){
-    xMouseCoordinates = event.changedTouches[0].clientX;
-    yMouseCoordinates = event.changedTouches[0].clientY;
-    updateMouseCoordinates()
-};
-
-function onMouseMove(event){
-     xMouseCoordinates = event.clientX;
-     yMouseCoordinates = event.clientY;
-    updateMouseCoordinates()
-};
-
-function onTouchStart(event) {
-    event.preventDefault();
-    var touches = evt.changedTouches;
-  
-    for (var i = 0; i < touches.length; i++) {
-      ongoingTouches.push(copyTouch(touches[i]));
+    render(){
+        const redStyle = {
+            color:"red"
+        };
+        return (
+            <div style={{margin:20}}>
+                <form onSubmit={this.setName}>
+                    <input type="text" name="userName"></input>
+                    <button>Aceptar Nombre</button>
+                </form>
+                {
+                this.state.allUserNames.map((name)=>
+                    <h1 key={name} style={name==this.state.userName?redStyle:undefined}>{name}</h1>
+                )}
+            </div>
+        );
     }
 }
 
-
-function updateMouseCoordinates(){
-    coordinatesHtml = (
-        <div>
-            <p>Coordinada x: {xMouseCoordinates}</p>
-            <p>Coordinada y: {yMouseCoordinates}</p>
-        </div>
-    );
-    const cepilloStyle={
-        height:"auto",
-        width:"6%",
-        top:yMouseCoordinates,
-        left:xMouseCoordinates,
-        //transformOrigin:"center center",
-        position:"absolute"
-    };
-    cepilloHtml = (
-            <img src="./Sprites/Cepillo.png" style={cepilloStyle}></img>
-    );
-
-    renderGame();
-}
-
-function updatePusheen(){
-    const positionType="relative"
-     
-    let style = {
-        //backgroundColor: "red",
-        width: "13%",
-        height: "auto",
-        position: positionType,
-        left: xCubePosition+"%",
-        top: yCubePosition+"%"
-    };
-    
-    pusheenHtml = (
-        <img style={style} src={lastWasLeft?"./Sprites/Pusheen_the_Cat.png":"./Sprites/Pusheen_the_Cat_2.png"}></img>
-    );
-    renderGame();
-}
-
-function renderGame(){
-    const AllHtml = (
-        <div style={{height:"90%"}}>
-            {coordinatesHtml}
-            {pusheenHtml}
-            {cepilloHtml}
-        </div>
-    );
-    ReactDOM.render(AllHtml, document.getElementById("app"));
-};
-
-function updateAll(){
-    updatePusheen();
-    updateMouseCoordinates();
-}
-
-updateAll();
-renderGame();
+ReactDOM.render(<Player/>, document.getElementById("app"))

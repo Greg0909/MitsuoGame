@@ -1,110 +1,99 @@
 "use strict";
 
-var xCubePosition = 50;
-var yCubePosition = 0;
-var lastWasLeft = true;
-var xMouseCoordinates = 40;
-var yMouseCoordinates = 40;
-var pusheenHtml = void 0;
-var coordinatesHtml = void 0;
-var cepilloHtml = void 0;
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-document.onmousemove = onMouseMove;
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-document.addEventListener('keydown', function (event) {
-    console.log("Pressed KeyCode:", event.keyCode);
-    if (event.keyCode == 37) // Left Arrow
-        {
-            xCubePosition -= 2;
-            console.log("Se presiono Izquierda");
-            lastWasLeft = true;
-        } else if (event.keyCode == 39) // Right Arrow
-        {
-            xCubePosition += 2;
-            console.log("Se presiono Derecha");
-            lastWasLeft = false;
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var _database = firebase.database();
+var DefaultName = "Patatas";
+
+var Player = function (_React$Component) {
+    _inherits(Player, _React$Component);
+
+    function Player(props) {
+        _classCallCheck(this, Player);
+
+        var _this = _possibleConstructorReturn(this, (Player.__proto__ || Object.getPrototypeOf(Player)).call(this, props));
+
+        _this.setName = _this.setName.bind(_this);
+        var initialUserName = DefaultName + "_" + (Math.floor(Math.random() * 1000) + 1);
+        _database.ref("Users/" + initialUserName).set(1);
+
+        _this.state = {
+            userName: initialUserName,
+            allUserNames: [initialUserName, "UwU"]
+        };
+
+        _database.ref('Users').on('value', function (snapshot) {
+            var data = snapshot.val();
+            var names = [];
+            for (var k in data) {
+                names.push(k);
+            }console.log(names);
+            _this.setState(function () {
+                return {
+                    allUserNames: names
+                };
+            });
+        });
+        window.onbeforeunload = function () {
+            return _database.ref("Users/" + _this.state.userName).remove();
+        };
+        return _this;
+    }
+
+    _createClass(Player, [{
+        key: "setName",
+        value: function setName(e) {
+            e.preventDefault();
+
+            var userName = e.target.elements.userName.value;
+            if (userName) {
+                _database.ref("Users/" + this.state.userName).remove();
+                this.setState(function () {
+                    return { userName: userName };
+                });
+                e.target.elements.userName.value = "";
+                _database.ref("Users/" + userName).set(1);
+            }
         }
+    }, {
+        key: "render",
+        value: function render() {
+            var _this2 = this;
 
-    if (event.keyCode == 40) // Down Arrow
-        {
-            yCubePosition += 2;
-            console.log("Se presiono Abajo");
-        } else if (event.keyCode == 38) // Up Arrow
-        {
-            yCubePosition -= 2;
-            console.log("Se presiono Arriba");
+            var redStyle = {
+                color: "red"
+            };
+            return React.createElement(
+                "div",
+                { style: { margin: 20 } },
+                React.createElement(
+                    "form",
+                    { onSubmit: this.setName },
+                    React.createElement("input", { type: "text", name: "userName" }),
+                    React.createElement(
+                        "button",
+                        null,
+                        "Aceptar Nombre"
+                    )
+                ),
+                this.state.allUserNames.map(function (name) {
+                    return React.createElement(
+                        "h1",
+                        { key: name, style: name == _this2.state.userName ? redStyle : undefined },
+                        name
+                    );
+                })
+            );
         }
+    }]);
 
-    updatePusheen();
-});
+    return Player;
+}(React.Component);
 
-function onMouseMove(event) {
-    xMouseCoordinates = event.clientX;
-    yMouseCoordinates = event.clientY;
-    updateMouseCoordinates();
-};
-
-function updateMouseCoordinates() {
-    coordinatesHtml = React.createElement(
-        "div",
-        null,
-        React.createElement(
-            "p",
-            null,
-            "Coordinada x: ",
-            xMouseCoordinates
-        ),
-        React.createElement(
-            "p",
-            null,
-            "Coordinada y: ",
-            yMouseCoordinates
-        )
-    );
-    var cepilloStyle = {
-        height: "auto",
-        width: "6%",
-        top: yMouseCoordinates,
-        left: xMouseCoordinates,
-        //transformOrigin:"center center",
-        position: "absolute"
-    };
-    cepilloHtml = React.createElement("img", { src: "./Sprites/Cepillo.png", style: cepilloStyle });
-
-    renderGame();
-}
-
-function updatePusheen() {
-    var positionType = "relative";
-
-    var style = {
-        //backgroundColor: "red",
-        width: "13%",
-        height: "auto",
-        position: positionType,
-        left: xCubePosition + "%",
-        top: yCubePosition + "%"
-    };
-
-    pusheenHtml = React.createElement("img", { style: style, src: lastWasLeft ? "./Sprites/Pusheen_the_Cat.png" : "./Sprites/Pusheen_the_Cat_2.png" });
-    renderGame();
-}
-
-function renderGame() {
-    var AllHtml = React.createElement(
-        "div",
-        { style: { height: "90%" } },
-        coordinatesHtml,
-        pusheenHtml,
-        cepilloHtml
-    );
-    ReactDOM.render(AllHtml, document.getElementById("app"));
-};
-
-function updateAll() {
-    updatePusheen();
-    updateMouseCoordinates();
-}
-
-updateAll();
-renderGame();
+ReactDOM.render(React.createElement(Player, null), document.getElementById("app"));
