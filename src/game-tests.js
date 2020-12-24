@@ -33,19 +33,21 @@ class Player extends React.Component{
                     for(var k in pastData)
                     {
                         if((k in data) && pastData[k]==data[k] )
-                            console.log("delete:", k)
+                            _database.ref("Users/" + k).remove();
                     }
                 }
                 pastData = data;
                 checkForDropouts=false;
             }
         });
+
         setInterval(()=>{
             counter = (counter%60)+1;
-            _database.ref("Users/" + initialUserName).set( counter );
+            _database.ref("Users/" + this.state.userName).set( counter );
             if(counter%2==0)
                 checkForDropouts=true;
         }, 500);
+
         onbeforeunload = ()=> _database.ref("Users/" + this.state.userName).remove();
     }
 

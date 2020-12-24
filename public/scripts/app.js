@@ -45,18 +45,20 @@ var Player = function (_React$Component) {
             if (checkForDropouts) {
                 if (pastData) {
                     for (var k in pastData) {
-                        if (k in data && pastData[k] == data[k]) console.log("delete:", k);
+                        if (k in data && pastData[k] == data[k]) _database.ref("Users/" + k).remove();
                     }
                 }
                 pastData = data;
                 checkForDropouts = false;
             }
         });
+
         setInterval(function () {
             counter = counter % 60 + 1;
-            _database.ref("Users/" + initialUserName).set(counter);
+            _database.ref("Users/" + _this.state.userName).set(counter);
             if (counter % 2 == 0) checkForDropouts = true;
         }, 500);
+
         onbeforeunload = function onbeforeunload() {
             return _database.ref("Users/" + _this.state.userName).remove();
         };
