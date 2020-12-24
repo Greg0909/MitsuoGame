@@ -28,7 +28,7 @@ var Player = function (_React$Component) {
 
         _this.state = {
             userName: initialUserName,
-            allUserNames: [initialUserName, "UwU"]
+            allUserNames: [initialUserName]
         };
 
         _database.ref('Users').on('value', function (snapshot) {

@@ -14,7 +14,7 @@ class Player extends React.Component{
         
         this.state = {
             userName: initialUserName,
-            allUserNames: [initialUserName, "UwU"]
+            allUserNames: [initialUserName]
         };
 
         _database.ref('Users').on('value', (snapshot) => {
