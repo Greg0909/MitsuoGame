@@ -56,7 +56,7 @@ var Player = function (_React$Component) {
         setInterval(function () {
             counter = counter % 60 + 1;
             _database.ref("Users/" + _this.state.userName).set(counter);
-            if (counter % 2 == 0) checkForDropouts = true;
+            if (counter % 4 == 0) checkForDropouts = true;
         }, 500);
 
         onbeforeunload = function onbeforeunload() {
@@ -76,6 +76,7 @@ var Player = function (_React$Component) {
                 this.setState(function () {
                     return { userName: userName };
                 });
+                this.state.userName = userName;
                 e.target.elements.userName.value = "";
                 _database.ref("Users/" + userName).set(1);
             }

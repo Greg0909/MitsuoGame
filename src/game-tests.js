@@ -44,7 +44,7 @@ class Player extends React.Component{
         setInterval(()=>{
             counter = (counter%60)+1;
             _database.ref("Users/" + this.state.userName).set( counter );
-            if(counter%2==0)
+            if(counter%4==0)
                 checkForDropouts=true;
         }, 500);
 
@@ -59,6 +59,7 @@ class Player extends React.Component{
         {
             _database.ref("Users/" + this.state.userName).remove();
             this.setState(()=>{return {userName: userName};})
+            this.state.userName = userName;
             e.target.elements.userName.value = "";
             _database.ref("Users/" + userName).set( 1 );
         }
