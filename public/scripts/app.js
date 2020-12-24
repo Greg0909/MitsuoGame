@@ -23,14 +23,20 @@ var XmasGame = function (_React$Component) {
         var _this = _possibleConstructorReturn(this, (XmasGame.__proto__ || Object.getPrototypeOf(XmasGame)).call(this, props));
 
         _this.setName = _this.setName.bind(_this);
+        _this.restartGift = _this.restartGift.bind(_this);
+
         var initialUserName = DefaultName + "_" + (Math.floor(Math.random() * 1000) + 1);
         _database.ref("Users/" + initialUserName).set(counter);
 
+        // Estados iniciales
         _this.state = {
             userName: initialUserName,
-            allUserNames: [initialUserName]
+            allUserNames: [initialUserName],
+            clickCount: 200,
+            turno: "???"
         };
 
+        // Borra a los usuarios que no han incrementado su contador
         _database.ref('Users').on('value', function (snapshot) {
             var data = snapshot.val();
             var names = [];
@@ -53,6 +59,33 @@ var XmasGame = function (_React$Component) {
             }
         });
 
+        // Cuando el turno cambia se mueve el regalo al persoanje
+        // que tiene el turno. el siguiente turno es decidido de 
+        // manera aleatoria por el usuario actual que tenia el 
+        // turno previo.
+        _database.ref('Gift/turno').on('value', function (snapshot) {
+
+            if (_this.state.allUserNames.length > 1 && snapshot.val() == _this.state.userName) {
+
+                var randIndex = 0;
+                do {
+                    randIndex = Math.floor(_this.state.allUserNames.length * Math.random());
+                } while (_this.state.allUserNames[randIndex] == _this.state.userName);
+
+                var timeoutMilliseconds = (Math.floor(Math.random() * 4) + 3) * 1000;
+                setTimeout(function () {
+                    return _database.ref("Gift/turno").set(_this.state.allUserNames[randIndex]);
+                }, timeoutMilliseconds);
+                console.log("timeout:", timeoutMilliseconds);
+            }
+
+            _this.setState(function () {
+                return { turno: snapshot.val() };
+            });
+        });
+
+        // Cada 500 milisegundos aumenta un contador unico de cada usuario
+        // como evidencia de que siguen conectados.
         setInterval(function () {
             counter = counter % 60 + 1;
             _database.ref("Users/" + _this.state.userName).set(counter);
@@ -82,6 +115,17 @@ var XmasGame = function (_React$Component) {
             }
         }
     }, {
+        key: "restartGift",
+        value: function restartGift() {
+            _database.ref("Gift/count").set(100);
+            _database.ref("Gift/turno").set(this.state.userName);
+            this.setState(function () {
+                return {
+                    clickCount: 100
+                };
+            });
+        }
+    }, {
         key: "render",
         value: function render() {
             var _this2 = this;
@@ -101,9 +145,24 @@ var XmasGame = function (_React$Component) {
                 ),
                 React.createElement(
                     "div",
+                    null,
+                    React.createElement(
+                        "button",
+                        { onClick: this.restartGift, style: { margin: "20px" } },
+                        "Start/Restart Game"
+                    )
+                ),
+                React.createElement(
+                    "div",
                     { style: { display: "flex", flexWrap: "wrap" } },
                     this.state.allUserNames.map(function (name) {
-                        return React.createElement(Player, { key: name, name: name, isActualUser: name == _this2.state.userName });
+                        return React.createElement(Player, {
+                            key: name,
+                            name: name,
+                            isActualUser: name == _this2.state.userName,
+                            clickCount: _this2.state.clickCount,
+                            hasGift: name == _this2.state.turno
+                        });
                     })
                 )
             );
@@ -131,29 +190,91 @@ var Player = function (_React$Component2) {
                 color: "red"
             };
             var playerStyle = {
-                // margin:20
+                //marginRight:"-38%",
+                width: "50%"
             };
             var imageStyle = {
                 height: "auto",
-                width: "30%",
+                width: "100%",
                 position: "relative",
                 left: "10%"
             };
 
             return React.createElement(
                 "div",
-                { style: playerStyle },
+                { style: { width: "30%", margin: "20px" } },
                 React.createElement(
-                    "h1",
-                    { style: isActualUser ? redStyle : undefined },
-                    name
+                    "div",
+                    null,
+                    React.createElement(
+                        "h1",
+                        { style: isActualUser ? redStyle : undefined },
+                        name
+                    )
                 ),
-                React.createElement("img", { src: "./Sprites/Player.png", style: imageStyle })
+                React.createElement(
+                    "div",
+                    { style: { display: "flex" } },
+                    React.createElement(
+                        "div",
+                        { style: playerStyle },
+                        React.createElement("img", { src: "./Sprites/Player.png", style: imageStyle })
+                    ),
+                    React.createElement(
+                        "div",
+                        { style: { position: "relative", width: "30%" } },
+                        React.createElement(Gift, {
+                            hasGift: this.props.hasGift,
+                            clickCount: this.props.clickCount
+                        })
+                    )
+                )
             );
         }
     }]);
 
     return Player;
+}(React.Component);
+
+var Gift = function (_React$Component3) {
+    _inherits(Gift, _React$Component3);
+
+    function Gift(props) {
+        _classCallCheck(this, Gift);
+
+        return _possibleConstructorReturn(this, (Gift.__proto__ || Object.getPrototypeOf(Gift)).call(this, props));
+    }
+
+    _createClass(Gift, [{
+        key: "render",
+        value: function render() {
+            var imageStyle = {
+                width: "100%",
+                height: "auto"
+
+            };
+            var mainDivStyle = {
+                position: "absolute",
+                bottom: "0px"
+            };
+
+            var hasGift = this.props.hasGift;
+            var giftTemplate = React.createElement(
+                "div",
+                { style: mainDivStyle },
+                React.createElement(
+                    "h2",
+                    null,
+                    this.props.clickCount
+                ),
+                React.createElement("img", { src: "./Sprites/Gift.png", style: imageStyle })
+            );
+            var emptyTemplate = React.createElement("div", null);
+            return hasGift ? giftTemplate : emptyTemplate;
+        }
+    }]);
+
+    return Gift;
 }(React.Component);
 
 ReactDOM.render(React.createElement(XmasGame, null), document.getElementById("app"));

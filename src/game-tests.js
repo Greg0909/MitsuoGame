@@ -9,14 +9,20 @@ class XmasGame extends React.Component{
     constructor(props){
         super(props);
         this.setName = this.setName.bind(this);
+        this.restartGift = this.restartGift.bind(this);
+
         const initialUserName = DefaultName + "_" + (Math.floor(Math.random()*1000) +1);
         _database.ref("Users/" + initialUserName).set( counter );
         
+        // Estados iniciales
         this.state = {
             userName: initialUserName,
-            allUserNames: [initialUserName]
+            allUserNames: [initialUserName],
+            clickCount: 200,
+            turno: "???"
         };
 
+        // Borra a los usuarios que no han incrementado su contador
         _database.ref('Users').on('value', (snapshot) => {
             const data = snapshot.val();
             let names = [];
@@ -41,6 +47,29 @@ class XmasGame extends React.Component{
             }
         });
 
+        // Cuando el turno cambia se mueve el regalo al persoanje
+        // que tiene el turno. el siguiente turno es decidido de 
+        // manera aleatoria por el usuario actual que tenia el 
+        // turno previo.
+        _database.ref('Gift/turno').on('value', (snapshot) => {
+
+            if(this.state.allUserNames.length > 1 && snapshot.val() == this.state.userName){
+
+                let randIndex = 0;
+                do{
+                    randIndex = Math.floor( this.state.allUserNames.length * Math.random() );
+                }while(this.state.allUserNames[randIndex] == this.state.userName);
+                
+                const timeoutMilliseconds = ( Math.floor( Math.random() * 4) +3) *1000;
+                setTimeout( ()=> _database.ref("Gift/turno").set( this.state.allUserNames[randIndex] ), timeoutMilliseconds);
+                console.log("timeout:", timeoutMilliseconds);
+            }
+
+            this.setState(()=>{return {turno:snapshot.val()}})
+        });
+
+        // Cada 500 milisegundos aumenta un contador unico de cada usuario
+        // como evidencia de que siguen conectados.
         setInterval(()=>{
             counter = (counter%60)+1;
             _database.ref("Users/" + this.state.userName).set( counter );
@@ -65,6 +94,16 @@ class XmasGame extends React.Component{
         }
     }
 
+    restartGift(){
+        _database.ref("Gift/count").set( 100 );
+        _database.ref("Gift/turno").set( this.state.userName );
+        this.setState(()=>{
+            return {
+                clickCount: 100
+            };
+        });
+    }
+
     render(){
 
         return (
@@ -73,10 +112,19 @@ class XmasGame extends React.Component{
                     <input type="text" name="userName"></input>
                     <button>Aceptar Nombre</button>
                 </form>
+                <div>
+                    <button onClick={this.restartGift} style={{margin:"20px"}}>Start/Restart Game</button>
+                </div>
                 <div style={{display: "flex", flexWrap:"wrap"}}>
                     {
                     this.state.allUserNames.map((name)=>
-                        <Player key={name} name={name} isActualUser={name==this.state.userName} />
+                        <Player 
+                            key={name} 
+                            name={name} 
+                            isActualUser={name==this.state.userName} 
+                            clickCount={this.state.clickCount}
+                            hasGift={name==this.state.turno}
+                        />
                     )}
                 </div>
             </div>
@@ -96,24 +144,67 @@ class Player extends React.Component{
             color:"red"
         };
         const playerStyle = {
-           // margin:20
+            //marginRight:"-38%",
+            width: "50%"
         }
         const imageStyle = {
             height:"auto",
-            width: "30%",
+            width: "100%",
             position: "relative",
             left: "10%"
         }
 
         return(
-            <div style={playerStyle}>
-                <h1 style={isActualUser?redStyle:undefined}>{name}</h1>
-                <img src="./Sprites/Player.png" style={imageStyle}/>
+            <div style={{ width:"30%", margin:"20px"}}>
+                <div>
+                    <h1 style={isActualUser?redStyle:undefined}>{name}</h1>
+                </div>
+                <div style={{display:"flex"}}> 
+                    <div style={playerStyle}>
+                        <img src="./Sprites/Player.png" style={imageStyle}/>
+                    </div>
+
+                    <div style={{position:"relative",width:"30%"}}>
+                        <Gift 
+                            hasGift={this.props.hasGift} 
+                            clickCount={this.props.clickCount}
+                        />
+                    </div>
+                </div>
             </div>
         );
     }
 
 
+}
+
+class Gift extends React.Component{
+    constructor(props){
+        super(props);
+    }
+    render(){
+        const imageStyle = {
+            width: "100%",
+            height: "auto",
+            
+        };
+        const mainDivStyle={
+           position: "absolute",
+           bottom: "0px"
+        };
+
+        const hasGift = this.props.hasGift;
+        const giftTemplate = (
+            <div style={mainDivStyle}>
+                <h2>{this.props.clickCount}</h2>
+                <img src="./Sprites/Gift.png" style={imageStyle}/>
+            </div>
+        );
+        const emptyTemplate = (
+            <div></div>
+        );
+        return hasGift ? giftTemplate:emptyTemplate;
+    }
 }
 
 ReactDOM.render(<XmasGame/>, document.getElementById("app"))
