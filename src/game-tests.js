@@ -1,6 +1,8 @@
 let _database = firebase.database();
 const DefaultName = "Patatas";
-
+let counter = 0;
+let checkForDropouts = false;
+let pastData;
 
 
 class Player extends React.Component{
@@ -8,7 +10,7 @@ class Player extends React.Component{
         super(props);
         this.setName = this.setName.bind(this);
         const initialUserName = DefaultName + "_" + (Math.floor(Math.random()*1000) +1);
-        _database.ref("Users/" + initialUserName).set( 1 );
+        _database.ref("Users/" + initialUserName).set( counter );
         
         this.state = {
             userName: initialUserName,
@@ -19,11 +21,31 @@ class Player extends React.Component{
             const data = snapshot.val();
             let names = [];
             for(var k in data) names.push(k);
-            console.log(names);
+
             this.setState(()=>{return {
                 allUserNames: names
             };});
+           // console.log(data);
+            if(checkForDropouts)
+            {          
+                if(pastData)
+                {                 
+                    for(var k in pastData)
+                    {
+                        if((k in data) && pastData[k]==data[k] )
+                            console.log("delete:", k)
+                    }
+                }
+                pastData = data;
+                checkForDropouts=false;
+            }
         });
+        window.setInterval(()=>{
+            counter = (counter%60)+1;
+            _database.ref("Users/" + initialUserName).set( counter );
+            if(counter%2==0)
+                checkForDropouts=true;
+        }, 500);
         window.onbeforeunload = ()=> _database.ref("Users/" + this.state.userName).remove();
     }
 

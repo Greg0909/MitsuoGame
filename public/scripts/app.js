@@ -10,6 +10,9 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 
 var _database = firebase.database();
 var DefaultName = "Patatas";
+var counter = 0;
+var checkForDropouts = false;
+var pastData = void 0;
 
 var Player = function (_React$Component) {
     _inherits(Player, _React$Component);
@@ -21,7 +24,7 @@ var Player = function (_React$Component) {
 
         _this.setName = _this.setName.bind(_this);
         var initialUserName = DefaultName + "_" + (Math.floor(Math.random() * 1000) + 1);
-        _database.ref("Users/" + initialUserName).set(1);
+        _database.ref("Users/" + initialUserName).set(counter);
 
         _this.state = {
             userName: initialUserName,
@@ -33,13 +36,27 @@ var Player = function (_React$Component) {
             var names = [];
             for (var k in data) {
                 names.push(k);
-            }console.log(names);
-            _this.setState(function () {
+            }_this.setState(function () {
                 return {
                     allUserNames: names
                 };
             });
+            // console.log(data);
+            if (checkForDropouts) {
+                if (pastData) {
+                    for (var k in pastData) {
+                        if (k in data && pastData[k] == data[k]) console.log("delete:", k);
+                    }
+                }
+                pastData = data;
+                checkForDropouts = false;
+            }
         });
+        window.setInterval(function () {
+            counter = counter % 60 + 1;
+            _database.ref("Users/" + initialUserName).set(counter);
+            if (counter % 2 == 0) checkForDropouts = true;
+        }, 500);
         window.onbeforeunload = function () {
             return _database.ref("Users/" + _this.state.userName).remove();
         };
