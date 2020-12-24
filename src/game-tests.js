@@ -10,6 +10,7 @@ class XmasGame extends React.Component{
         super(props);
         this.setName = this.setName.bind(this);
         this.restartGift = this.restartGift.bind(this);
+        this.onClickGift = this.onClickGift.bind(this);
 
         const initialUserName = DefaultName + "_" + (Math.floor(Math.random()*1000) +1);
         _database.ref("Users/" + initialUserName).set( counter );
@@ -18,7 +19,7 @@ class XmasGame extends React.Component{
         this.state = {
             userName: initialUserName,
             allUserNames: [initialUserName],
-            clickCount: 200,
+            clickCount: 100,
             turno: "???"
         };
 
@@ -60,12 +61,21 @@ class XmasGame extends React.Component{
                     randIndex = Math.floor( this.state.allUserNames.length * Math.random() );
                 }while(this.state.allUserNames[randIndex] == this.state.userName);
                 
-                const timeoutMilliseconds = ( Math.floor( Math.random() * 4) +3) *1000;
-                setTimeout( ()=> _database.ref("Gift/turno").set( this.state.allUserNames[randIndex] ), timeoutMilliseconds);
+                const timeoutMilliseconds = ( Math.floor( Math.random() * 4) +2) *1000;
+                setTimeout( ()=> {
+                    if(this.state.clickCount!=0)
+                        _database.ref("Gift/turno").set( this.state.allUserNames[randIndex] )
+                }, timeoutMilliseconds);
                 console.log("timeout:", timeoutMilliseconds);
             }
 
             this.setState(()=>{return {turno:snapshot.val()}})
+        });
+
+        // Cuando el contador de click cambia se refreshea 
+        // su state para vovler a hacer el render.
+        _database.ref('Gift/count').on('value', (snapshot) => {
+            this.setState(()=>{return {clickCount:snapshot.val()}})
         });
 
         // Cada 500 milisegundos aumenta un contador unico de cada usuario
@@ -94,14 +104,27 @@ class XmasGame extends React.Component{
         }
     }
 
-    restartGift(){
-        _database.ref("Gift/count").set( 100 );
+    restartGift(e){
+        e.preventDefault();
+
+        const inputClickCount = e.target.elements.maxClickCount.value;
+        let maxClickCount = 100;
+        if(inputClickCount)
+            maxClickCount = inputClickCount;
+
+        _database.ref("Gift/count").set( maxClickCount );
+        _database.ref("Gift/turno").set( "" );
         _database.ref("Gift/turno").set( this.state.userName );
         this.setState(()=>{
             return {
-                clickCount: 100
+                clickCount: maxClickCount
             };
         });
+    }
+
+    onClickGift(){
+        if( this.state.clickCount >= 1)
+            _database.ref("Gift/count").set( this.state.clickCount - 1 );
     }
 
     render(){
@@ -112,9 +135,12 @@ class XmasGame extends React.Component{
                     <input type="text" name="userName"></input>
                     <button>Aceptar Nombre</button>
                 </form>
-                <div>
-                    <button onClick={this.restartGift} style={{margin:"20px"}}>Start/Restart Game</button>
-                </div>
+
+                <form onSubmit={this.restartGift}>
+                    <input type="text" name="maxClickCount"></input>
+                    <button>Start/Restart Game</button>
+                </form>
+
                 <div style={{display: "flex", flexWrap:"wrap"}}>
                     {
                     this.state.allUserNames.map((name)=>
@@ -127,6 +153,17 @@ class XmasGame extends React.Component{
                         />
                     )}
                 </div>
+
+                { (this.state.userName==this.state.turno && 
+                    this.state.clickCount!=0) && 
+                    <GiftButton 
+                        onClickGift={this.onClickGift} 
+                        clickCount={this.state.clickCount}
+                    />
+                }
+                { (this.state.clickCount==0) &&
+                    <WinMessage winner={this.state.turno}/>
+                }
             </div>
         );
     }
@@ -171,6 +208,7 @@ class Player extends React.Component{
                         />
                     </div>
                 </div>
+
             </div>
         );
     }
@@ -204,6 +242,43 @@ class Gift extends React.Component{
             <div></div>
         );
         return hasGift ? giftTemplate:emptyTemplate;
+    }
+}
+
+class GiftButton extends React.Component{
+    constructor(props){
+        super(props);
+    }
+
+    render(){
+        const textStyle={
+            textAlign: "center"
+        }
+        return (
+            <div className="centered">
+                <h1 style={textStyle}>Click Me!!!</h1>
+                <h1 style={textStyle}>{this.props.clickCount} Clicks to Open</h1>
+                <img onClick={this.props.onClickGift} style={{display:"block",marginLeft:"auto",marginRight:"auto"}} src="./Sprites/Gift.png"></img>
+            </div>
+        );
+    }
+}
+
+class WinMessage extends React.Component{
+    constructor(props){
+        super(props);
+    }
+
+    render(){
+        const textStyle={
+            textAlign: "center"
+        }
+        return (
+            <div className="centered">
+                <h1 style={textStyle}>The Winner is</h1>
+                <h1 style={textStyle}>{this.props.winner} !!!</h1>
+            </div>
+        );
     }
 }
 
