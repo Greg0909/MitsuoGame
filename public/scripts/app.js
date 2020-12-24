@@ -14,13 +14,13 @@ var counter = 0;
 var checkForDropouts = false;
 var pastData = void 0;
 
-var Player = function (_React$Component) {
-    _inherits(Player, _React$Component);
+var XmasGame = function (_React$Component) {
+    _inherits(XmasGame, _React$Component);
 
-    function Player(props) {
-        _classCallCheck(this, Player);
+    function XmasGame(props) {
+        _classCallCheck(this, XmasGame);
 
-        var _this = _possibleConstructorReturn(this, (Player.__proto__ || Object.getPrototypeOf(Player)).call(this, props));
+        var _this = _possibleConstructorReturn(this, (XmasGame.__proto__ || Object.getPrototypeOf(XmasGame)).call(this, props));
 
         _this.setName = _this.setName.bind(_this);
         var initialUserName = DefaultName + "_" + (Math.floor(Math.random() * 1000) + 1);
@@ -65,7 +65,7 @@ var Player = function (_React$Component) {
         return _this;
     }
 
-    _createClass(Player, [{
+    _createClass(XmasGame, [{
         key: "setName",
         value: function setName(e) {
             e.preventDefault();
@@ -86,9 +86,6 @@ var Player = function (_React$Component) {
         value: function render() {
             var _this2 = this;
 
-            var redStyle = {
-                color: "red"
-            };
             return React.createElement(
                 "div",
                 { style: { margin: 20 } },
@@ -102,13 +99,56 @@ var Player = function (_React$Component) {
                         "Aceptar Nombre"
                     )
                 ),
-                this.state.allUserNames.map(function (name) {
-                    return React.createElement(
-                        "h1",
-                        { key: name, style: name == _this2.state.userName ? redStyle : undefined },
-                        name
-                    );
-                })
+                React.createElement(
+                    "div",
+                    { style: { display: "flex", flexWrap: "wrap" } },
+                    this.state.allUserNames.map(function (name) {
+                        return React.createElement(Player, { key: name, name: name, isActualUser: name == _this2.state.userName });
+                    })
+                )
+            );
+        }
+    }]);
+
+    return XmasGame;
+}(React.Component);
+
+var Player = function (_React$Component2) {
+    _inherits(Player, _React$Component2);
+
+    function Player(props) {
+        _classCallCheck(this, Player);
+
+        return _possibleConstructorReturn(this, (Player.__proto__ || Object.getPrototypeOf(Player)).call(this, props));
+    }
+
+    _createClass(Player, [{
+        key: "render",
+        value: function render() {
+            var name = this.props.name;
+            var isActualUser = this.props.isActualUser;
+            var redStyle = {
+                color: "red"
+            };
+            var playerStyle = {
+                // margin:20
+            };
+            var imageStyle = {
+                height: "auto",
+                width: "30%",
+                position: "relative",
+                left: "10%"
+            };
+
+            return React.createElement(
+                "div",
+                { style: playerStyle },
+                React.createElement(
+                    "h1",
+                    { style: isActualUser ? redStyle : undefined },
+                    name
+                ),
+                React.createElement("img", { src: "./Sprites/Player.png", style: imageStyle })
             );
         }
     }]);
@@ -116,4 +156,4 @@ var Player = function (_React$Component) {
     return Player;
 }(React.Component);
 
-ReactDOM.render(React.createElement(Player, null), document.getElementById("app"));
+ReactDOM.render(React.createElement(XmasGame, null), document.getElementById("app"));

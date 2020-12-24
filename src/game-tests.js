@@ -5,7 +5,7 @@ let checkForDropouts = false;
 let pastData;
 
 
-class Player extends React.Component{
+class XmasGame extends React.Component{
     constructor(props){
         super(props);
         this.setName = this.setName.bind(this);
@@ -66,22 +66,54 @@ class Player extends React.Component{
     }
 
     render(){
-        const redStyle = {
-            color:"red"
-        };
+
         return (
             <div style={{margin:20}}>
                 <form onSubmit={this.setName}>
                     <input type="text" name="userName"></input>
                     <button>Aceptar Nombre</button>
                 </form>
-                {
-                this.state.allUserNames.map((name)=>
-                    <h1 key={name} style={name==this.state.userName?redStyle:undefined}>{name}</h1>
-                )}
+                <div style={{display: "flex", flexWrap:"wrap"}}>
+                    {
+                    this.state.allUserNames.map((name)=>
+                        <Player key={name} name={name} isActualUser={name==this.state.userName} />
+                    )}
+                </div>
             </div>
         );
     }
 }
 
-ReactDOM.render(<Player/>, document.getElementById("app"))
+class Player extends React.Component{
+    constructor(props){
+        super(props);
+
+    }
+    render(){
+        const name = this.props.name;
+        const isActualUser = this.props.isActualUser;
+        const redStyle = {
+            color:"red"
+        };
+        const playerStyle = {
+           // margin:20
+        }
+        const imageStyle = {
+            height:"auto",
+            width: "30%",
+            position: "relative",
+            left: "10%"
+        }
+
+        return(
+            <div style={playerStyle}>
+                <h1 style={isActualUser?redStyle:undefined}>{name}</h1>
+                <img src="./Sprites/Player.png" style={imageStyle}/>
+            </div>
+        );
+    }
+
+
+}
+
+ReactDOM.render(<XmasGame/>, document.getElementById("app"))
