@@ -57,7 +57,7 @@ var Player = function (_React$Component) {
             _database.ref("Users/" + initialUserName).set(counter);
             if (counter % 2 == 0) checkForDropouts = true;
         }, 500);
-        window.onbeforeunload = function () {
+        onbeforeunload = function onbeforeunload() {
             return _database.ref("Users/" + _this.state.userName).remove();
         };
         return _this;

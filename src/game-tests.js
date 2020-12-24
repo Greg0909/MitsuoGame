@@ -46,7 +46,7 @@ class Player extends React.Component{
             if(counter%2==0)
                 checkForDropouts=true;
         }, 500);
-        window.onbeforeunload = ()=> _database.ref("Users/" + this.state.userName).remove();
+        onbeforeunload = ()=> _database.ref("Users/" + this.state.userName).remove();
     }
 
     setName(e){
