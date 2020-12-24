@@ -52,7 +52,7 @@ var Player = function (_React$Component) {
                 checkForDropouts = false;
             }
         });
-        window.setInterval(function () {
+        setInterval(function () {
             counter = counter % 60 + 1;
             _database.ref("Users/" + initialUserName).set(counter);
             if (counter % 2 == 0) checkForDropouts = true;

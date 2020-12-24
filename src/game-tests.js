@@ -40,7 +40,7 @@ class Player extends React.Component{
                 checkForDropouts=false;
             }
         });
-        window.setInterval(()=>{
+        setInterval(()=>{
             counter = (counter%60)+1;
             _database.ref("Users/" + initialUserName).set( counter );
             if(counter%2==0)
