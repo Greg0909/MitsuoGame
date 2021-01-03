@@ -14,367 +14,166 @@ var counter = 0;
 var checkForDropouts = false;
 var pastData = void 0;
 
-var XmasGame = function (_React$Component) {
-    _inherits(XmasGame, _React$Component);
+var MitzuoGame = function (_React$Component) {
+    _inherits(MitzuoGame, _React$Component);
 
-    function XmasGame(props) {
-        _classCallCheck(this, XmasGame);
+    function MitzuoGame(props) {
+        _classCallCheck(this, MitzuoGame);
 
-        var _this = _possibleConstructorReturn(this, (XmasGame.__proto__ || Object.getPrototypeOf(XmasGame)).call(this, props));
+        return _possibleConstructorReturn(this, (MitzuoGame.__proto__ || Object.getPrototypeOf(MitzuoGame)).call(this, props));
+    }
 
-        _this.setName = _this.setName.bind(_this);
-        _this.restartGift = _this.restartGift.bind(_this);
-        _this.onClickGift = _this.onClickGift.bind(_this);
+    _createClass(MitzuoGame, [{
+        key: "render",
+        value: function render() {
+            return React.createElement(
+                "div",
+                null,
+                React.createElement(Cells, null)
+            );
+        }
+    }]);
 
-        var initialUserName = DefaultName + "_" + (Math.floor(Math.random() * 1000) + 1);
-        _database.ref("Users/" + initialUserName).set(counter);
+    return MitzuoGame;
+}(React.Component);
 
-        // Estados iniciales
-        _this.state = {
-            userName: initialUserName,
-            allUserNames: [initialUserName],
-            clickCount: 100,
-            turno: "???"
+var Cells = function (_React$Component2) {
+    _inherits(Cells, _React$Component2);
+
+    function Cells(props) {
+        _classCallCheck(this, Cells);
+
+        var _this2 = _possibleConstructorReturn(this, (Cells.__proto__ || Object.getPrototypeOf(Cells)).call(this, props));
+
+        _this2.transitionCell = "cell cell-motion";
+        _this2.noTransitionCell = "cell";
+        _this2.floorWidth = 100;
+
+        _this2.state = {
+            cellsStyles: [{ left: 0 + "vw", width: _this2.floorWidth + "vw" }, { left: _this2.floorWidth + "vw", width: _this2.floorWidth + "vw" }, { left: _this2.floorWidth * 2 + "vw", width: _this2.floorWidth + "vw" }],
+            cellsClass: [_this2.transitionCell, _this2.transitionCell, _this2.transitionCell]
         };
 
-        // Borra a los usuarios que no han incrementado su contador
-        _database.ref('Users').on('value', function (snapshot) {
-            var data = snapshot.val();
-            var names = [];
-            for (var k in data) {
-                names.push(k);
-            }_this.setState(function () {
-                return {
-                    allUserNames: names
-                };
-            });
-            // console.log(data);
-            if (checkForDropouts) {
-                if (pastData) {
-                    for (var k in pastData) {
-                        if (k in data && pastData[k] == data[k]) _database.ref("Users/" + k).remove();
-                    }
-                }
-                pastData = data;
-                checkForDropouts = false;
-            }
-        });
-
-        // Cuando el turno cambia se mueve el regalo al persoanje
-        // que tiene el turno. el siguiente turno es decidido de 
-        // manera aleatoria por el usuario actual que tenia el 
-        // turno previo.
-        _database.ref('Gift/turno').on('value', function (snapshot) {
-
-            if (_this.state.allUserNames.length > 1 && snapshot.val() == _this.state.userName) {
-
-                var randIndex = 0;
-                do {
-                    randIndex = Math.floor(_this.state.allUserNames.length * Math.random());
-                } while (_this.state.allUserNames[randIndex] == _this.state.userName);
-
-                var timeoutMilliseconds = (Math.floor(Math.random() * 4) + 2) * 1000;
-                setTimeout(function () {
-                    if (_this.state.clickCount != 0) _database.ref("Gift/turno").set(_this.state.allUserNames[randIndex]);
-                }, timeoutMilliseconds);
-                console.log("timeout:", timeoutMilliseconds);
-            }
-
-            _this.setState(function () {
-                return { turno: snapshot.val() };
-            });
-        });
-
-        // Cuando el contador de click cambia se refreshea 
-        // su state para vovler a hacer el render.
-        _database.ref('Gift/count').on('value', function (snapshot) {
-            _this.setState(function () {
-                return { clickCount: snapshot.val() };
-            });
-        });
-
-        // Cada 500 milisegundos aumenta un contador unico de cada usuario
-        // como evidencia de que siguen conectados.
         setInterval(function () {
-            counter = counter % 60 + 1;
-            _database.ref("Users/" + _this.state.userName).set(counter);
-            if (counter % 4 == 0) checkForDropouts = true;
-        }, 500);
+            _this2.setState(function (prevState) {
+                var resultCell1 = parseInt(prevState.cellsStyles[0].left.replace(/vw/, "")) - _this2.floorWidth + "vw";
+                var resultCell2 = parseInt(prevState.cellsStyles[1].left.replace(/vw/, "")) - _this2.floorWidth + "vw";
+                var resultCell3 = parseInt(prevState.cellsStyles[2].left.replace(/vw/, "")) - _this2.floorWidth + "vw";
 
-        onbeforeunload = function onbeforeunload() {
-            return _database.ref("Users/" + _this.state.userName).remove();
-        };
-        return _this;
-    }
+                var classTypeCell1 = _this2.transitionCell;
+                var classTypeCell2 = _this2.transitionCell;
+                var classTypeCell3 = _this2.transitionCell;
 
-    _createClass(XmasGame, [{
-        key: "setName",
-        value: function setName(e) {
-            e.preventDefault();
+                if (parseInt(resultCell1.replace(/vw/, "")) < -_this2.floorWidth) {
+                    resultCell1 = _this2.floorWidth + "vw";
+                    classTypeCell1 = _this2.noTransitionCell;
+                }
+                if (parseInt(resultCell2.replace(/vw/, "")) < -_this2.floorWidth) {
+                    resultCell2 = _this2.floorWidth + "vw";
+                    classTypeCell2 = _this2.noTransitionCell;
+                }
+                if (parseInt(resultCell3.replace(/vw/, "")) < -_this2.floorWidth) {
+                    resultCell3 = _this2.floorWidth + "vw";
+                    classTypeCell3 = _this2.noTransitionCell;
+                }
 
-            var userName = e.target.elements.userName.value;
-            if (userName) {
-                _database.ref("Users/" + this.state.userName).remove();
-                this.setState(function () {
-                    return { userName: userName };
-                });
-                this.state.userName = userName;
-                e.target.elements.userName.value = "";
-                _database.ref("Users/" + userName).set(1);
-            }
-        }
-    }, {
-        key: "restartGift",
-        value: function restartGift(e) {
-            e.preventDefault();
-
-            var inputClickCount = e.target.elements.maxClickCount.value;
-            var maxClickCount = 100;
-            if (inputClickCount) maxClickCount = inputClickCount;
-
-            _database.ref("Gift/count").set(maxClickCount);
-            _database.ref("Gift/turno").set("");
-            _database.ref("Gift/turno").set(this.state.userName);
-            this.setState(function () {
-                return {
-                    clickCount: maxClickCount
-                };
+                return { cellsStyles: [{ left: resultCell1, width: _this2.floorWidth + "vw" }, { left: resultCell2, width: _this2.floorWidth + "vw" }, { left: resultCell3, width: _this2.floorWidth + "vw" }],
+                    cellsClass: [classTypeCell1, classTypeCell2, classTypeCell3] };
             });
-        }
-    }, {
-        key: "onClickGift",
-        value: function onClickGift() {
-            if (this.state.clickCount >= 1) _database.ref("Gift/count").set(this.state.clickCount - 1);
-        }
-    }, {
-        key: "render",
-        value: function render() {
-            var _this2 = this;
-
-            return React.createElement(
-                "div",
-                { style: { margin: 20 } },
-                React.createElement(
-                    "form",
-                    { onSubmit: this.setName },
-                    React.createElement("input", { type: "text", name: "userName" }),
-                    React.createElement(
-                        "button",
-                        null,
-                        "Aceptar Nombre"
-                    )
-                ),
-                React.createElement(
-                    "form",
-                    { onSubmit: this.restartGift },
-                    React.createElement("input", { type: "text", name: "maxClickCount" }),
-                    React.createElement(
-                        "button",
-                        null,
-                        "Start/Restart Game"
-                    )
-                ),
-                React.createElement(
-                    "div",
-                    { style: { display: "flex", flexWrap: "wrap" } },
-                    this.state.allUserNames.map(function (name) {
-                        return React.createElement(Player, {
-                            key: name,
-                            name: name,
-                            isActualUser: name == _this2.state.userName,
-                            clickCount: _this2.state.clickCount,
-                            hasGift: name == _this2.state.turno
-                        });
-                    })
-                ),
-                this.state.userName == this.state.turno && this.state.clickCount != 0 && React.createElement(GiftButton, {
-                    onClickGift: this.onClickGift,
-                    clickCount: this.state.clickCount
-                }),
-                this.state.clickCount == 0 && React.createElement(WinMessage, { winner: this.state.turno })
-            );
-        }
-    }]);
-
-    return XmasGame;
-}(React.Component);
-
-var Player = function (_React$Component2) {
-    _inherits(Player, _React$Component2);
-
-    function Player(props) {
-        _classCallCheck(this, Player);
-
-        return _possibleConstructorReturn(this, (Player.__proto__ || Object.getPrototypeOf(Player)).call(this, props));
+        }, 3000);
+        return _this2;
     }
 
-    _createClass(Player, [{
+    _createClass(Cells, [{
         key: "render",
         value: function render() {
-            var name = this.props.name;
-            var isActualUser = this.props.isActualUser;
-            var redStyle = {
-                color: "red"
-            };
-            var playerStyle = {
-                //marginRight:"-38%",
-                width: "50%"
-            };
-            var imageStyle = {
-                height: "auto",
-                width: "100%",
-                position: "relative",
-                left: "10%"
-            };
 
+            this.cell1 = React.createElement(
+                "div",
+                { key: "f1", className: this.state.cellsClass[0], style: this.state.cellsStyles[0] },
+                "Cell",
+                React.createElement(Obstacle, { yPosition: "30px" }),
+                React.createElement(Obstacle, { yPosition: "200px" }),
+                React.createElement(
+                    "div",
+                    { className: "floor" },
+                    "floor"
+                )
+            );
+            this.cell2 = React.createElement(
+                "div",
+                { key: "f2", className: this.state.cellsClass[1], style: this.state.cellsStyles[1] },
+                "Cell",
+                React.createElement(Obstacle, { yPosition: "100px" }),
+                React.createElement(
+                    "div",
+                    { className: "floor" },
+                    "floor"
+                )
+            );
+            this.cell3 = React.createElement(
+                "div",
+                { key: "f3", className: this.state.cellsClass[2], style: this.state.cellsStyles[2] },
+                "Cell",
+                React.createElement(Obstacle, { yPosition: "10%" }),
+                React.createElement(Obstacle, { yPosition: "20%" }),
+                React.createElement(Obstacle, { yPosition: "30%" }),
+                React.createElement(Obstacle, { yPosition: "40%" }),
+                React.createElement(Obstacle, { yPosition: "50%" }),
+                React.createElement(
+                    "div",
+                    { className: "floor" },
+                    "floor"
+                )
+            );
+
+            this.cells = [this.cell1, this.cell2, this.cell3];
+
+            console.log("RENDERR!!", this.state.cellsStyles[0]);
             return React.createElement(
                 "div",
-                { style: { width: "30%", margin: "20px" } },
+                null,
                 React.createElement(
                     "div",
-                    null,
+                    { className: "game-window" },
                     React.createElement(
-                        "h1",
-                        { style: isActualUser ? redStyle : undefined },
-                        name
-                    )
-                ),
-                React.createElement(
-                    "div",
-                    { style: { display: "flex" } },
-                    React.createElement(
-                        "div",
-                        { style: playerStyle },
-                        React.createElement("img", { src: "./Sprites/Player.png", style: imageStyle })
+                        "h2",
+                        null,
+                        "GameWindow"
                     ),
-                    React.createElement(
-                        "div",
-                        { style: { position: "relative", width: "30%" } },
-                        React.createElement(Gift, {
-                            hasGift: this.props.hasGift,
-                            clickCount: this.props.clickCount
-                        })
-                    )
+                    this.cells
                 )
             );
         }
     }]);
 
-    return Player;
+    return Cells;
 }(React.Component);
 
-var Gift = function (_React$Component3) {
-    _inherits(Gift, _React$Component3);
+var Obstacle = function (_React$Component3) {
+    _inherits(Obstacle, _React$Component3);
 
-    function Gift(props) {
-        _classCallCheck(this, Gift);
+    function Obstacle(props) {
+        _classCallCheck(this, Obstacle);
 
-        return _possibleConstructorReturn(this, (Gift.__proto__ || Object.getPrototypeOf(Gift)).call(this, props));
+        return _possibleConstructorReturn(this, (Obstacle.__proto__ || Object.getPrototypeOf(Obstacle)).call(this, props));
     }
 
-    _createClass(Gift, [{
+    _createClass(Obstacle, [{
         key: "render",
         value: function render() {
-            var imageStyle = {
-                width: "100%",
-                height: "auto"
-
-            };
-            var mainDivStyle = {
-                position: "absolute",
-                bottom: "0px"
-            };
-
-            var hasGift = this.props.hasGift;
-            var giftTemplate = React.createElement(
-                "div",
-                { style: mainDivStyle },
-                React.createElement(
-                    "h2",
-                    null,
-                    this.props.clickCount
-                ),
-                React.createElement("img", { src: "./Sprites/Gift.png", style: imageStyle })
-            );
-            var emptyTemplate = React.createElement("div", null);
-            return hasGift ? giftTemplate : emptyTemplate;
-        }
-    }]);
-
-    return Gift;
-}(React.Component);
-
-var GiftButton = function (_React$Component4) {
-    _inherits(GiftButton, _React$Component4);
-
-    function GiftButton(props) {
-        _classCallCheck(this, GiftButton);
-
-        return _possibleConstructorReturn(this, (GiftButton.__proto__ || Object.getPrototypeOf(GiftButton)).call(this, props));
-    }
-
-    _createClass(GiftButton, [{
-        key: "render",
-        value: function render() {
-            var textStyle = {
-                textAlign: "center"
+            var objStyle = {
+                left: this.props.yPosition
             };
             return React.createElement(
                 "div",
-                { className: "centered" },
-                React.createElement(
-                    "h1",
-                    { style: textStyle },
-                    "Click Me!!!"
-                ),
-                React.createElement(
-                    "h1",
-                    { style: textStyle },
-                    this.props.clickCount,
-                    " Clicks to Open"
-                ),
-                React.createElement("img", { onClick: this.props.onClickGift, style: { display: "block", marginLeft: "auto", marginRight: "auto" }, src: "./Sprites/Gift.png" })
+                null,
+                React.createElement("div", { className: "object", style: objStyle })
             );
         }
     }]);
 
-    return GiftButton;
+    return Obstacle;
 }(React.Component);
 
-var WinMessage = function (_React$Component5) {
-    _inherits(WinMessage, _React$Component5);
-
-    function WinMessage(props) {
-        _classCallCheck(this, WinMessage);
-
-        return _possibleConstructorReturn(this, (WinMessage.__proto__ || Object.getPrototypeOf(WinMessage)).call(this, props));
-    }
-
-    _createClass(WinMessage, [{
-        key: "render",
-        value: function render() {
-            var textStyle = {
-                textAlign: "center"
-            };
-            return React.createElement(
-                "div",
-                { className: "centered" },
-                React.createElement(
-                    "h1",
-                    { style: textStyle },
-                    "The Winner is"
-                ),
-                React.createElement(
-                    "h1",
-                    { style: textStyle },
-                    this.props.winner,
-                    " !!!"
-                )
-            );
-        }
-    }]);
-
-    return WinMessage;
-}(React.Component);
-
-ReactDOM.render(React.createElement(XmasGame, null), document.getElementById("app"));
+ReactDOM.render(React.createElement(MitzuoGame, null), document.getElementById("app"));

@@ -5,281 +5,141 @@ let checkForDropouts = false;
 let pastData;
 
 
-class XmasGame extends React.Component{
+class MitzuoGame extends React.Component{
     constructor(props){
         super(props);
-        this.setName = this.setName.bind(this);
-        this.restartGift = this.restartGift.bind(this);
-        this.onClickGift = this.onClickGift.bind(this);
+    }
 
-        const initialUserName = DefaultName + "_" + (Math.floor(Math.random()*1000) +1);
-        _database.ref("Users/" + initialUserName).set( counter );
+
+    render(){
+        return (
+            <div>
+                <Cells/>
+            </div>
+        );
+    }
+}
+
+class Cells extends React.Component{
+    constructor(props){
+        super(props);
+        this.transitionCell = "cell cell-motion";
+        this.noTransitionCell = "cell";
+        this.floorWidth = 100;
         
-        // Estados iniciales
         this.state = {
-            userName: initialUserName,
-            allUserNames: [initialUserName],
-            clickCount: 100,
-            turno: "???"
+            cellsStyles: [{left:0+"vw", width:this.floorWidth+"vw"}, 
+                            {left:this.floorWidth+"vw", width:this.floorWidth+"vw"},
+                            {left:this.floorWidth*2+"vw", width:this.floorWidth+"vw"}],
+            cellsClass: [this.transitionCell, 
+                        this.transitionCell, 
+                        this.transitionCell]
         };
 
-        // Borra a los usuarios que no han incrementado su contador
-        _database.ref('Users').on('value', (snapshot) => {
-            const data = snapshot.val();
-            let names = [];
-            for(var k in data) names.push(k);
+        
 
-            this.setState(()=>{return {
-                allUserNames: names
-            };});
-           // console.log(data);
-            if(checkForDropouts)
-            {          
-                if(pastData)
-                {                 
-                    for(var k in pastData)
-                    {
-                        if((k in data) && pastData[k]==data[k] )
-                            _database.ref("Users/" + k).remove();
-                    }
-                }
-                pastData = data;
-                checkForDropouts=false;
-            }
-        });
-
-        // Cuando el turno cambia se mueve el regalo al persoanje
-        // que tiene el turno. el siguiente turno es decidido de 
-        // manera aleatoria por el usuario actual que tenia el 
-        // turno previo.
-        _database.ref('Gift/turno').on('value', (snapshot) => {
-
-            if(this.state.allUserNames.length > 1 && snapshot.val() == this.state.userName){
-
-                let randIndex = 0;
-                do{
-                    randIndex = Math.floor( this.state.allUserNames.length * Math.random() );
-                }while(this.state.allUserNames[randIndex] == this.state.userName);
-                
-                const timeoutMilliseconds = ( Math.floor( Math.random() * 4) +2) *1000;
-                setTimeout( ()=> {
-                    if(this.state.clickCount!=0)
-                        _database.ref("Gift/turno").set( this.state.allUserNames[randIndex] )
-                }, timeoutMilliseconds);
-                console.log("timeout:", timeoutMilliseconds);
-            }
-
-            this.setState(()=>{return {turno:snapshot.val()}})
-        });
-
-        // Cuando el contador de click cambia se refreshea 
-        // su state para vovler a hacer el render.
-        _database.ref('Gift/count').on('value', (snapshot) => {
-            this.setState(()=>{return {clickCount:snapshot.val()}})
-        });
-
-        // Cada 500 milisegundos aumenta un contador unico de cada usuario
-        // como evidencia de que siguen conectados.
         setInterval(()=>{
-            counter = (counter%60)+1;
-            _database.ref("Users/" + this.state.userName).set( counter );
-            if(counter%4==0)
-                checkForDropouts=true;
-        }, 500);
+                this.setState((prevState)=>{
+                    let resultCell1 = (parseInt(prevState.cellsStyles[0].left.replace(/vw/,""))-this.floorWidth)+"vw";
+                    let resultCell2 = (parseInt(prevState.cellsStyles[1].left.replace(/vw/,""))-this.floorWidth)+"vw";
+                    let resultCell3 = (parseInt(prevState.cellsStyles[2].left.replace(/vw/,""))-this.floorWidth)+"vw";
 
-        onbeforeunload = ()=> _database.ref("Users/" + this.state.userName).remove();
-    }
+                    let classTypeCell1 = this.transitionCell;
+                    let classTypeCell2 = this.transitionCell;
+                    let classTypeCell3 = this.transitionCell;
 
-    setName(e){
-        e.preventDefault();
-
-        const userName = e.target.elements.userName.value;
-        if(userName)
-        {
-            _database.ref("Users/" + this.state.userName).remove();
-            this.setState(()=>{return {userName: userName};})
-            this.state.userName = userName;
-            e.target.elements.userName.value = "";
-            _database.ref("Users/" + userName).set( 1 );
-        }
-    }
-
-    restartGift(e){
-        e.preventDefault();
-
-        const inputClickCount = e.target.elements.maxClickCount.value;
-        let maxClickCount = 100;
-        if(inputClickCount)
-            maxClickCount = inputClickCount;
-
-        _database.ref("Gift/count").set( maxClickCount );
-        _database.ref("Gift/turno").set( "" );
-        _database.ref("Gift/turno").set( this.state.userName );
-        this.setState(()=>{
-            return {
-                clickCount: maxClickCount
-            };
-        });
-    }
-
-    onClickGift(){
-        if( this.state.clickCount >= 1)
-            _database.ref("Gift/count").set( this.state.clickCount - 1 );
-    }
-
-    render(){
-
-        return (
-            <div style={{margin:20}}>
-                <form onSubmit={this.setName}>
-                    <input type="text" name="userName"></input>
-                    <button>Aceptar Nombre</button>
-                </form>
-
-                <form onSubmit={this.restartGift}>
-                    <input type="text" name="maxClickCount"></input>
-                    <button>Start/Restart Game</button>
-                </form>
-
-                <div style={{display: "flex", flexWrap:"wrap"}}>
+                    if(parseInt(resultCell1.replace(/vw/,""))<-this.floorWidth)
                     {
-                    this.state.allUserNames.map((name)=>
-                        <Player 
-                            key={name} 
-                            name={name} 
-                            isActualUser={name==this.state.userName} 
-                            clickCount={this.state.clickCount}
-                            hasGift={name==this.state.turno}
-                        />
-                    )}
-                </div>
-
-                { (this.state.userName==this.state.turno && 
-                    this.state.clickCount!=0) && 
-                    <GiftButton 
-                        onClickGift={this.onClickGift} 
-                        clickCount={this.state.clickCount}
-                    />
-                }
-                { (this.state.clickCount==0) &&
-                    <WinMessage winner={this.state.turno}/>
-                }
-            </div>
-        );
-    }
-}
-
-class Player extends React.Component{
-    constructor(props){
-        super(props);
-
-    }
-    render(){
-        const name = this.props.name;
-        const isActualUser = this.props.isActualUser;
-        const redStyle = {
-            color:"red"
-        };
-        const playerStyle = {
-            //marginRight:"-38%",
-            width: "50%"
-        }
-        const imageStyle = {
-            height:"auto",
-            width: "100%",
-            position: "relative",
-            left: "10%"
-        }
-
-        return(
-            <div style={{ width:"30%", margin:"20px"}}>
-                <div>
-                    <h1 style={isActualUser?redStyle:undefined}>{name}</h1>
-                </div>
-                <div style={{display:"flex"}}> 
-                    <div style={playerStyle}>
-                        <img src="./Sprites/Player.png" style={imageStyle}/>
-                    </div>
-
-                    <div style={{position:"relative",width:"30%"}}>
-                        <Gift 
-                            hasGift={this.props.hasGift} 
-                            clickCount={this.props.clickCount}
-                        />
-                    </div>
-                </div>
-
-            </div>
-        );
-    }
+                        resultCell1 = this.floorWidth+"vw";
+                        classTypeCell1 = this.noTransitionCell;
+                    }
+                    if(parseInt(resultCell2.replace(/vw/,""))<-this.floorWidth)
+                    {
+                        resultCell2 = this.floorWidth+"vw";
+                        classTypeCell2 = this.noTransitionCell;
+                    }
+                    if(parseInt(resultCell3.replace(/vw/,""))<-this.floorWidth)
+                    {
+                        resultCell3 = this.floorWidth+"vw";
+                        classTypeCell3 = this.noTransitionCell;
+                    }
 
 
-}
-
-class Gift extends React.Component{
-    constructor(props){
-        super(props);
-    }
-    render(){
-        const imageStyle = {
-            width: "100%",
-            height: "auto",
+                    return {cellsStyles: [{left:resultCell1, width:this.floorWidth+"vw"},
+                                          {left:resultCell2, width:this.floorWidth+"vw"},
+                                          {left:resultCell3, width:this.floorWidth+"vw"}],
+                            cellsClass: [classTypeCell1, classTypeCell2, classTypeCell3]};
+                })
             
-        };
-        const mainDivStyle={
-           position: "absolute",
-           bottom: "0px"
-        };
+        } ,3000);
+    }
+    render(){
 
-        const hasGift = this.props.hasGift;
-        const giftTemplate = (
-            <div style={mainDivStyle}>
-                <h2>{this.props.clickCount}</h2>
-                <img src="./Sprites/Gift.png" style={imageStyle}/>
+        this.cell1 = (
+            <div key="f1" className={this.state.cellsClass[0]} style={this.state.cellsStyles[0]}>
+                Cell
+                <Obstacle yPosition="30px"/>
+                <Obstacle yPosition="200px"/>
+                <div className="floor">
+                    floor
+                </div>
             </div>
         );
-        const emptyTemplate = (
-            <div></div>
+        this.cell2 = (
+            <div key="f2" className={this.state.cellsClass[1]} style={this.state.cellsStyles[1]}>
+                Cell
+                <Obstacle yPosition="100px"/>
+                <div className="floor">
+                    floor
+                </div>
+            </div>
         );
-        return hasGift ? giftTemplate:emptyTemplate;
+        this.cell3 = (
+            <div key="f3" className={this.state.cellsClass[2]} style={this.state.cellsStyles[2]}>
+                Cell
+                <Obstacle yPosition="10%"/>
+                <Obstacle yPosition="20%"/>
+                <Obstacle yPosition="30%"/>
+
+                <Obstacle yPosition="40%"/>
+                <Obstacle yPosition="50%"/>
+                <div className="floor">
+                    floor
+                </div>
+            </div>
+        );
+
+        this.cells=[this.cell1, 
+            this.cell2,
+            this.cell3];
+
+        console.log("RENDERR!!", this.state.cellsStyles[0]);
+        return(
+            <div>
+                <div className="game-window"> 
+                    <h2>GameWindow</h2>
+                    {this.cells}
+                </div>
+            </div>
+        );
     }
 }
 
-class GiftButton extends React.Component{
+class Obstacle extends React.Component{
     constructor(props){
         super(props);
     }
-
     render(){
-        const textStyle={
-            textAlign: "center"
-        }
-        return (
-            <div className="centered">
-                <h1 style={textStyle}>Click Me!!!</h1>
-                <h1 style={textStyle}>{this.props.clickCount} Clicks to Open</h1>
-                <img onClick={this.props.onClickGift} style={{display:"block",marginLeft:"auto",marginRight:"auto"}} src="./Sprites/Gift.png"></img>
+        let objStyle = {
+            left: this.props.yPosition
+        };
+        return(
+            <div>
+                <div className="object" style={objStyle}></div>
             </div>
         );
     }
 }
 
-class WinMessage extends React.Component{
-    constructor(props){
-        super(props);
-    }
 
-    render(){
-        const textStyle={
-            textAlign: "center"
-        }
-        return (
-            <div className="centered">
-                <h1 style={textStyle}>The Winner is</h1>
-                <h1 style={textStyle}>{this.props.winner} !!!</h1>
-            </div>
-        );
-    }
-}
-
-ReactDOM.render(<XmasGame/>, document.getElementById("app"))
+ReactDOM.render(<MitzuoGame/>, document.getElementById("app"))
