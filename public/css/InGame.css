@@ -13,8 +13,9 @@ body, html{
 }
 
 iframe{
-    height:320px;
-    width:480px;
+    height:auto;
+    width:auto;
+    border: 1px solid black;
 }
 
 .disable-dbl-tap-zoom {

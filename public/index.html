@@ -38,8 +38,8 @@
 
 
         <div class="game-container">
-            <h1>Mitsuo Game</h1>
-            <iframe src="ReleaseFiles/Game.html" scrolling="no" marginwidth="320px" height="320px" width="480px"></iframe>
+            <h1>Space Worm Game</h1>
+            <iframe src="ReleaseFiles/Game.html" scrolling="no" frameborder="0px" onload="resizeIframe(this)"></iframe>
         </div>
         
 
@@ -48,7 +48,12 @@
         <script src="https://unpkg.com/react-dom@16.0.0/umd/react-dom.development.js"></script>
         <script src="./scripts/app.js"></script>
 
-        
+        <script>
+            function resizeIframe(obj) {
+              obj.style.height = obj.contentWindow.document.documentElement.scrollHeight + 'px';
+              obj.style.width = obj.contentWindow.document.documentElement.scrollWidth + 'px';
+            }
+        </script>
        
     </body>
 
