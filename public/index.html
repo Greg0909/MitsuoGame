@@ -1,13 +1,13 @@
 <!DOCTYPE html>
-<html style="height:99%;">
+<html >
     
     <head>
-        <meta charset="UTF-8">
+        <meta charset="UTF-8"  />
         <title> Mitzuo Game </title>
         <link href="css/InGame.css" rel="stylesheet"/>
     </head>
 
-    <body class="disable-dbl-tap-zoom">
+    <body class="disable-dbl-tap-zoom" id="body" onresize="onWindowsResize()">
         
 
 
@@ -50,8 +50,33 @@
 
         <script>
             function resizeIframe(obj) {
-              obj.style.height = obj.contentWindow.document.documentElement.scrollHeight + 'px';
-              obj.style.width = obj.contentWindow.document.documentElement.scrollWidth + 'px';
+                obj.style.height = obj.contentWindow.document.documentElement.scrollHeight + 'px';
+                obj.style.width = obj.contentWindow.document.documentElement.scrollWidth + 'px';
+                let body = document.getElementById("body");
+                body.style.transform = "scale(" + window.screen.availHeight/1000 +")";
+                 console.log("height:", window.screen.availHeight);
+                 console.log("width:", window.screen.availWidth);
+                // if(window.screen.availHeight <  window.screen.availWidth)
+                // {
+                //     let newWidth = 1100 * window.screen.availWidth/window.screen.availHeight;
+                //     body.style.width = newWidth + "px";
+                //     body.style.height = 1100 + "px";
+                //     console.log("New width:", newWidth);
+                // }
+                
+                // if(body.style.height <  body.style.width)
+                //     console.log("landscape");
+                // else
+                //     console.log("portrait");
+                // body.style.height = obj.style.height + "px";
+                // body.style.width = obj.style.height + "px";
+            }
+
+            function onWindowsResize(){
+                let body = document.getElementById("body");
+                body.style.transform = "scale(" + window.screen.availHeight/1000 +")";
+                 console.log("height:", window.screen.availHeight);
+                 console.log("width:", window.screen.availWidth);
             }
         </script>
        
