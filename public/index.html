@@ -12,74 +12,27 @@
 
 
          <!-- The core Firebase JS SDK is always required and must be listed first -->
-        <script src="https://www.gstatic.com/firebasejs/8.2.1/firebase-app.js"></script>
+        <!-- <script src="https://www.gstatic.com/firebasejs/8.2.1/firebase-app.js"></script> -->
 
         <!-- TODO: Add SDKs for Firebase products that you want to use
             https://firebase.google.com/docs/web/setup#available-libraries -->
-        <script src="https://www.gstatic.com/firebasejs/8.2.1/firebase-analytics.js"></script>
-        <script src="https://www.gstatic.com/firebasejs/8.2.1/firebase-database.js"></script>
-
-        <script>
-        // Your web app's Firebase configuration
-        // For Firebase JS SDK v7.20.0 and later, measurementId is optional
-        var firebaseConfig = {
-            apiKey: "AIzaSyB8fjITyb2NI_wFsiOUuXB6VmLb51xoP9g",
-            authDomain: "xmasgame-e2449.firebaseapp.com",
-            projectId: "xmasgame-e2449",
-            storageBucket: "xmasgame-e2449.appspot.com",
-            messagingSenderId: "825123495304",
-            appId: "1:825123495304:web:c92fd86e5482290cbbee3d",
-            measurementId: "G-NPEFLH0884"
-        };
-        // Initialize Firebase
-        firebase.initializeApp(firebaseConfig);
-        firebase.analytics();
-        </script>
+        <!-- <script src="https://www.gstatic.com/firebasejs/8.2.1/firebase-analytics.js"></script>
+        <script src="https://www.gstatic.com/firebasejs/8.2.1/firebase-database.js"></script> -->
 
 
-        <div class="game-container">
-            <h1>Space Worm Game</h1>
-            <iframe src="ReleaseFiles/Game.html" scrolling="no" frameborder="0px" onload="resizeIframe(this)"></iframe>
+        <div class="wrapper" id="gameContainer">
+            <div class="game-container" >
+                <h1>Space Worm Game</h1>
+                <iframe src="ReleaseFiles/Game.html" scrolling="no" frameborder="0px" onload="resizeIframe(this)" id="game"></iframe>
+                <!-- <div class="placeholder"></div> -->
+                <div onload="onWindowsResize()"></div>
+            </div>
         </div>
-        
 
         <!-- <div id="app"></div> -->
         <script src="https://unpkg.com/react@16.0.0/umd/react.development.js"></script>
         <script src="https://unpkg.com/react-dom@16.0.0/umd/react-dom.development.js"></script>
         <script src="./scripts/app.js"></script>
-
-        <script>
-            function resizeIframe(obj) {
-                obj.style.height = obj.contentWindow.document.documentElement.scrollHeight + 'px';
-                obj.style.width = obj.contentWindow.document.documentElement.scrollWidth + 'px';
-                let body = document.getElementById("body");
-                body.style.transform = "scale(" + window.screen.availHeight/1000 +")";
-                 console.log("height:", window.screen.availHeight);
-                 console.log("width:", window.screen.availWidth);
-                // if(window.screen.availHeight <  window.screen.availWidth)
-                // {
-                //     let newWidth = 1100 * window.screen.availWidth/window.screen.availHeight;
-                //     body.style.width = newWidth + "px";
-                //     body.style.height = 1100 + "px";
-                //     console.log("New width:", newWidth);
-                // }
-                
-                // if(body.style.height <  body.style.width)
-                //     console.log("landscape");
-                // else
-                //     console.log("portrait");
-                // body.style.height = obj.style.height + "px";
-                // body.style.width = obj.style.height + "px";
-            }
-
-            function onWindowsResize(){
-                let body = document.getElementById("body");
-                body.style.transform = "scale(" + window.screen.availHeight/1000 +")";
-                 console.log("height:", window.screen.availHeight);
-                 console.log("width:", window.screen.availWidth);
-            }
-        </script>
-       
     </body>
 
 </html>
