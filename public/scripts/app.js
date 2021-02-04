@@ -1,6 +1,6 @@
 function resizeIframe(obj) {
-    obj.style.height = obj.contentWindow.document.documentElement.scrollHeight + 'px';
-    obj.style.width = obj.contentWindow.document.documentElement.scrollWidth + 'px';
+    obj.style.height = 550 + 'px';
+    obj.style.width = 1000 + 'px';
 }
 
 function onWindowsResize(){
